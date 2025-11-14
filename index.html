@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="./public/output.css" />
+    <script
+      src="https://kit.fontawesome.com/636e95d9f3.js"
+      crossorigin="anonymous"
+    ></script>
+    <style>
+      .virtual-keyboard button {
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+      }
+      .difficulty-btn.active {
+        background-color: #3b82f6;
+        color: white;
+        pointer-events: none;
+      }
+      .difficulty-btn:not(.active) {
+        background-color: #e5e7eb;
+        color: #374151;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-100 flex flex-col md:flex-row items-center justify-center p-4 gap-4"
+  >
+    <div
+      id="game-container"
+      class="bg-white p-3 rounded-xl shadow-lg max-w-md w-full text-center"
+    >
+      <h2 class="text-3xl font-bold text-gray-800 mb-2">Code Guesser</h2>
+      <div class="flex justify-center gap-4 mb-2">
+        <button
+          id="easy-btn"
+          class="difficulty-btn w-1/2 py-2 font-semibold rounded-lg transition-colors"
+        >
+          Easy (3 Digits)
+        </button>
+        <button
+          id="hard-btn"
+          class="difficulty-btn w-1/2 py-2 font-semibold rounded-lg transition-colors active"
+        >
+          Hard (4 Digits)
+        </button>
+      </div>
+      <p id="round-display" class="text-lg font-medium text-gray-700 mb-3">
+        Round: 0
+      </p>
+      <div id="pin-input-fields" class="flex justify-center space-x-4 mb-2">
+        <input
+          type="text"
+          maxlength="1"
+          data-index="0"
+          class="pin-input-block"
+          readonly
+        />
+        <input
+          type="text"
+          maxlength="1"
+          data-index="1"
+          class="pin-input-block"
+          readonly
+        />
+        <input
+          type="text"
+          maxlength="1"
+          data-index="2"
+          class="pin-input-block"
+          readonly
+        />
+        <input
+          type="text"
+          maxlength="1"
+          data-index="3"
+          class="pin-input-block"
+          readonly
+        />
+      </div>
+      <p
+        id="feedback-message"
+        class="text-lg text-gray-700 h-12 flex items-center justify-center mb-3"
+      ></p>
+      <div
+        id="virtual-keyboard"
+        class="grid grid-cols-5 gap-3 max-w-xs mx-auto mb-4 place-items-center"
+      >
+        <button data-value="1" class="numpad">1</button>
+        <button data-value="2" class="numpad">2</button>
+        <button data-value="3" class="numpad">3</button>
+        <button data-value="4" class="numpad">4</button>
+        <button data-value="5" class="numpad">5</button>
+        <button data-value="6" class="numpad">6</button>
+        <button data-value="7" class="numpad">7</button>
+        <button data-value="8" class="numpad">8</button>
+        <button data-value="9" class="numpad">9</button>
+        <button data-value="0" class="numpad">0</button>
+        <button
+          data-value="backspace"
+          class="w-32 h-12 bg-red-100 active:bg-red-300 text-3xl text-red-700 flex items-center justify-center hover:bg-red-200 rounded-md col-start-3"
+          title="Backspace"
+        >
+          <i class="fa-solid fa-delete-left"></i>
+        </button>
+      </div>
+      <button
+        id="submit-guess-button"
+        class="w-full bg-blue-600 text-white py-2 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        disabled
+      >
+        SUBMIT GUESS
+      </button>
+
+      <button
+        id="new-game-button"
+        class="mt-4 w-full bg-green-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-green-700 transition-colors duration-200 hidden"
+      >
+        PLAY AGAIN
+      </button>
+    </div>
+    <div
+      id="previous-guesses-container"
+      class="bg-white p-6 rounded-xl shadow-lg max-w-sm w-full h-auto max-h-[80vh] overflow-y-auto"
+    >
+      <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">
+        Previously Guessed Numbers
+      </h3>
+      <p class="text-gray-500 text-xs mb-4 text-center">
+        <span class="font-bold text-red-500">Bull</span> = Correct digit,
+        Correct position<br />
+        <span class="font-bold text-blue-500">Cow</span> = Correct digit, Wrong
+        position
+      </p>
+      <div id="guess-history-list" class="flex flex-col"></div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>

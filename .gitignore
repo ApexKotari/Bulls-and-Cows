@@ -1,0 +1,19 @@
+# Node.js
+node_modules/
+.env
+.DS_Store
+
+# npm
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Tailwind CSS output
+/public/output.css
+
+# Optional
+.vscode/
+*.log
+*.tmp
+*.swp

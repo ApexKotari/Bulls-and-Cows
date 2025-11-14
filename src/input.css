@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .numpad {
+    @apply w-16 h-16 bg-gray-100 hover:bg-gray-200 active:bg-gray-300 rounded-lg text-3xl font-semibold text-gray-800 transition-colors duration-150;
+  }
+  .pin-input-block {
+    @apply caret-transparent w-14 h-14 text-3xl font-bold text-center border-2 border-gray-300 rounded-lg focus:outline-none transition-all duration-200;
+  }
+  .pin-input-block.active-input {
+    @apply border-customBlue shadow-blue-ring;
+  }
+}
