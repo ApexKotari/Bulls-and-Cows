@@ -2,12 +2,12 @@
 let secretCode = [];
 let userGuess = [];
 let currentInputIndex = 0; // for focus
-let roundCount = 0;
+let roundCount = 1;
 let gameWon = false;
 let currentDifficulty = "hard";
 let codeLength = 4; // for input block based on currentDifficulty
 
-// Detect mobile-ish devices: combine userAgent + pointer heuristics
+// Detect mobile
 const isMobile =
   /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent) ||
   (typeof window !== "undefined" &&
@@ -16,7 +16,7 @@ const isMobile =
     window.matchMedia &&
     window.matchMedia("(pointer: coarse)").matches);
 
-// DOM Elements
+// DOM elements
 const inputBlocks = document.querySelectorAll(".pin-input-block");
 const pinInputFields = document.getElementById("pin-input-fields");
 const virtualKeyboard = document.getElementById("virtual-keyboard");
@@ -28,7 +28,7 @@ const guessHistoryList = document.getElementById("guess-history-list");
 const easyBtn = document.getElementById("easy-btn");
 const hardBtn = document.getElementById("hard-btn");
 
-// Game Initialization
+//game initialization
 function initializeGame() {
   gameWon = false;
   roundCount = 0;
@@ -37,6 +37,7 @@ function initializeGame() {
   currentInputIndex = 0;
   secretCode = generateSecretCode();
 
+  //DELETE THIS LATER IDIOT
   console.log(
     `Difficulty: ${currentDifficulty}, Code (${codeLength}-digits):`,
     secretCode.join("")
@@ -47,14 +48,14 @@ function initializeGame() {
     block.classList.toggle("hidden", index >= codeLength);
   });
 
-  renderInputState(); // Update input fields and highlight
+  renderInputState(); // Update input and focus
   updateRoundDisplay();
-  feedbackMessage.textContent = ""; // Clear previous messages
-  guessHistoryList.innerHTML = ""; // Clear previous guesses history
-  submitGuessButton.disabled = true; // Disable submit until all digits are entered
-  newGameButton.classList.add("hidden"); // Hide "Play Again" button
+  feedbackMessage.textContent = ""; // clear previous messages
+  guessHistoryList.innerHTML = ""; // clear previous guesses history
+  submitGuessButton.disabled = true; // disable submit until all filled
+  newGameButton.classList.add("hidden"); // hide until win
 
-  // Re-enable game controls
+  //enable button for page reload and after press win
   pinInputFields.classList.remove("pointer-events-none", "opacity-50");
   virtualKeyboard.classList.remove("pointer-events-none", "opacity-50");
 
@@ -63,22 +64,18 @@ function initializeGame() {
   hardBtn.classList.toggle("active", currentDifficulty === "hard");
 }
 
-// --- Helper Functions ---
-
-// Generates a secret code based on current difficulty
+//secret code based on difficulty
 function generateSecretCode() {
   const digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
   let code = [];
 
   if (currentDifficulty === "hard") {
-    // Hard Mode: 4 unique digits
     for (let i = digits.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [digits[i], digits[j]] = [digits[j], digits[i]]; // Fisher-Yates shuffle
+      [digits[i], digits[j]] = [digits[j], digits[i]];
     }
-    code = digits.slice(0, codeLength); // 4 digits
+    code = digits.slice(0, codeLength);
   } else {
-    // Easy Mode: 3 digits with duplicates allowed
     for (let i = 0; i < codeLength; i++) {
       code.push(digits[Math.floor(Math.random() * digits.length)]);
     }
@@ -86,19 +83,17 @@ function generateSecretCode() {
   return code;
 }
 
-// Renders the current state of userGuess to the input blocks
 function renderInputState() {
   inputBlocks.forEach((block, index) => {
-    if (index >= codeLength) return; // Don't try to render hidden blocks
+    if (index >= codeLength) return; //for hiding last blocks
 
     block.value = userGuess[index];
     block.classList.remove("active-input");
 
-    // On mobile keep readonly always (prevents on-screen keyboard)
+    //hide keyboard for mobile only
     if (isMobile) {
       block.setAttribute("readonly", "true");
     } else {
-      // Desktop: allow editing the active input only
       if (index === currentInputIndex && !gameWon) {
         block.removeAttribute("readonly");
       } else {
@@ -107,35 +102,30 @@ function renderInputState() {
     }
   });
 
-  // Highlight the current active input block if not won
+  //for focus
   if (!gameWon && currentInputIndex < codeLength) {
     inputBlocks[currentInputIndex].classList.add("active-input");
-    // Only call focus on desktop — focusing on mobile might still trigger keyboard in odd cases
     if (!isMobile) {
       inputBlocks[currentInputIndex].focus();
     }
   } else if (!gameWon && currentInputIndex === codeLength) {
-    // All fields filled, keep focus on last block (desktop only)
     inputBlocks[codeLength - 1].classList.add("active-input");
     if (!isMobile) {
       inputBlocks[codeLength - 1].focus();
     }
   }
 
-  // Enable/disable submit button
   const isAllFilled = userGuess.every((digit) => digit !== "");
   submitGuessButton.disabled = !isAllFilled || gameWon;
 }
 
-// Updates the round display
 function updateRoundDisplay() {
   roundDisplay.textContent = `Round: ${roundCount}`;
 }
 
-// Calculates feedback (Bulls and Cows) - ROBUST FOR DUPLICATES
 function calculateFeedback(guess, code) {
-  let correctPositions = 0; // Bulls
-  let correctNumbers = 0; // Cows
+  let correctPositions = 0; //Bulls
+  let correctNumbers = 0; //cows
 
   const codeFreq = {};
   for (const digit of code) {
@@ -144,16 +134,14 @@ function calculateFeedback(guess, code) {
 
   let tempGuess = [...guess];
 
-  // First pass: find Bulls (correct position)
   for (let i = 0; i < codeLength; i++) {
     if (tempGuess[i] === code[i]) {
       correctPositions++;
       codeFreq[tempGuess[i]]--;
-      tempGuess[i] = null; // Mark guess as used (for Bull)
+      tempGuess[i] = null;
     }
   }
 
-  // Second pass: find Cows (correct number, wrong position)
   for (let i = 0; i < codeLength; i++) {
     if (tempGuess[i] !== null && codeFreq[tempGuess[i]] > 0) {
       correctNumbers++;
@@ -164,7 +152,6 @@ function calculateFeedback(guess, code) {
   return { correctNumbers, correctPositions };
 }
 
-// Adds a guess entry to the history section
 function addGuessToHistory(guess, bulls, cows) {
   const guessEntryDiv = document.createElement("div");
   guessEntryDiv.classList.add(
@@ -196,21 +183,18 @@ function addGuessToHistory(guess, bulls, cows) {
   guessEntryDiv.appendChild(guessNumberSpan);
   guessEntryDiv.appendChild(feedbackSpan);
 
-  guessHistoryList.prepend(guessEntryDiv); // Add to the top
+  guessHistoryList.prepend(guessEntryDiv);
 }
 
-// Temporarily shows a message in the feedback area
 function showTempFeedback(message, isError = true) {
   const color = isError ? "text-red-600" : "text-blue-600";
   feedbackMessage.innerHTML = `<span class="${color}">${message}</span>`;
   setTimeout(() => {
-    if (!gameWon) feedbackMessage.textContent = ""; // Clear message after 2s
+    if (!gameWon) feedbackMessage.textContent = "";
   }, 2000);
 }
 
-// --- Event Handlers ---
-
-// Handle clicks on virtual keyboard buttons
+// Handle btn clicks in virtual keyboard
 virtualKeyboard.addEventListener("click", (event) => {
   if (gameWon) return;
 
@@ -221,7 +205,6 @@ virtualKeyboard.addEventListener("click", (event) => {
 
   if (value === "backspace") {
     if (currentInputIndex === codeLength) {
-      // If all fields full, move back
       currentInputIndex--;
     }
     if (currentInputIndex > 0) {
@@ -231,9 +214,7 @@ virtualKeyboard.addEventListener("click", (event) => {
       userGuess[0] = "";
     }
   } else if (value >= "0" && value <= "9") {
-    // It's a number
-
-    // --- Duplicate Check for Hard Mode ---
+    //Duplicate entry
     if (currentDifficulty === "hard") {
       const isAlreadyInGuess = userGuess.some(
         (digit, index) => digit === value
@@ -244,10 +225,9 @@ virtualKeyboard.addEventListener("click", (event) => {
 
       if (isAlreadyInGuess && !isOverwritingItself) {
         showTempFeedback("Duplicate digits not allowed in Hard mode!");
-        return; // Stop processing input
+        return; //stop
       }
     }
-    // --- End Duplicate Check ---
 
     if (currentInputIndex < codeLength) {
       userGuess[currentInputIndex] = value;
@@ -259,7 +239,7 @@ virtualKeyboard.addEventListener("click", (event) => {
   renderInputState();
 });
 
-// Handle clicks on input blocks (works on both mobile and desktop)
+// handle click in input block
 inputBlocks.forEach((block, index) => {
   block.addEventListener("click", () => {
     if (gameWon || index >= codeLength) return;
@@ -268,7 +248,7 @@ inputBlocks.forEach((block, index) => {
   });
 });
 
-// Attach keydown handlers ONLY on non-mobile devices
+// keydown handle in laptop
 if (!isMobile) {
   inputBlocks.forEach((block, index) => {
     block.addEventListener("keydown", (event) => {
@@ -278,7 +258,7 @@ if (!isMobile) {
       const currentIndex = parseInt(event.target.dataset.index);
 
       if (key >= "0" && key <= "9") {
-        // --- Duplicate Check for Hard Mode (Physical Keyboard) ---
+        //dupicate entry check
         if (currentDifficulty === "hard") {
           const isAlreadyInGuess = userGuess.some(
             (digit, i) => digit === key && i !== currentIndex
@@ -289,13 +269,12 @@ if (!isMobile) {
             return;
           }
         }
-        // --- End Duplicate Check ---
 
         userGuess[currentIndex] = key;
         if (currentIndex < codeLength - 1) {
           currentInputIndex = currentIndex + 1;
         } else {
-          currentInputIndex = codeLength; // All filled
+          currentInputIndex = codeLength;
         }
         event.preventDefault();
       } else if (key === "Backspace") {
@@ -311,14 +290,14 @@ if (!isMobile) {
       } else if (key === "ArrowLeft" && currentIndex > 0) {
         currentInputIndex = currentIndex - 1;
       } else {
-        event.preventDefault(); // Prevent other keys
+        event.preventDefault(); //block other keys
       }
       renderInputState();
     });
   });
 }
 
-// Handle submit guess button click
+//handle submit button
 submitGuessButton.addEventListener("click", () => {
   if (gameWon || !userGuess.every((digit) => digit !== "")) return;
 
@@ -333,7 +312,7 @@ submitGuessButton.addEventListener("click", () => {
   addGuessToHistory(userGuess, correctPositions, correctNumbers);
 
   if (correctPositions === codeLength) {
-    // Check win condition
+    // check win condition
     gameWon = true;
     feedbackMessage.innerHTML = `<span class="text-green-700 font-bold">Congratulations! You guessed the code <span class="text-blue-600">${secretCode.join(
       ""
@@ -341,7 +320,6 @@ submitGuessButton.addEventListener("click", () => {
     submitGuessButton.disabled = true;
     newGameButton.classList.remove("hidden");
 
-    // Disable game inputs
     pinInputFields.classList.add("pointer-events-none", "opacity-50");
     virtualKeyboard.classList.add("pointer-events-none", "opacity-50");
   } else {
@@ -353,19 +331,19 @@ submitGuessButton.addEventListener("click", () => {
     if (correctNumbers === 0 && correctPositions === 0) {
       message = `No correct digits. Keep trying!`;
     }
-    feedbackMessage.innerHTML = `<span class="text-red-600">${message} (Round ${roundCount})</span>`;
+    feedbackMessage.innerHTML = `<span class="text-red-600">${message}</span>`;
 
-    // Prepare for next guess
+    //for next round
     userGuess = Array(codeLength).fill("");
     currentInputIndex = 0;
-    renderInputState(); // Clear inputs for next round
+    renderInputState(); //clear inputs
   }
 });
 
-// Handle new game button click
+// handle new game btn
 newGameButton.addEventListener("click", initializeGame);
 
-// Handle difficulty selection
+// handle level
 easyBtn.addEventListener("click", () => {
   currentDifficulty = "easy";
   initializeGame();
@@ -376,5 +354,5 @@ hardBtn.addEventListener("click", () => {
   initializeGame();
 });
 
-// --- Initial Game Setup when page loads ---
+//Initial on page loads
 initializeGame();
