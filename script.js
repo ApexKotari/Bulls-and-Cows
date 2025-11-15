@@ -31,7 +31,7 @@ const hardBtn = document.getElementById("hard-btn");
 //game initialization
 function initializeGame() {
   gameWon = false;
-  roundCount = 0;
+  roundCount = 1;
   codeLength = currentDifficulty === "hard" ? 4 : 3;
   userGuess = Array(codeLength).fill("");
   currentInputIndex = 0;
